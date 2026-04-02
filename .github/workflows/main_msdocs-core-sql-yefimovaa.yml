@@ -51,10 +51,15 @@ jobs:
           name: .net-app
           path: ./publish
 
+      # Крок логіну через ваші секрети (Service Principal)
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: '{"clientId":"${{ secrets.AZUREAPPSERVICE_CLIENTID_5F800DBF1C4A4E5C9CF24D0FEE4C1F52 }}","clientSecret":"${{ secrets.AZUREAPPSERVICE_CLIENTSECRET_ВАШ_ID }}","subscriptionId":"${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_938A26350F5442328669B53681B36357 }}","tenantId":"${{ secrets.AZUREAPPSERVICE_TENANTID_229A0A05FDAC44A381230CF6F0075863 }}"}'
+
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'msdocs-core-sql-yefimovaa'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
           package: ./publish
