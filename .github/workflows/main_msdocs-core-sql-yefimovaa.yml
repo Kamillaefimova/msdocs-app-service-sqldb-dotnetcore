@@ -18,20 +18,18 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
-          # include-prerelease видалено, оскільки v4 його не підтримує в такому вигляді
 
       - name: Build with dotnet
         run: dotnet build --configuration Release
 
       - name: dotnet publish
-        # Ми вказуємо шлях до конкретного файлу проекту, щоб уникнути помилки зі Solution-level output
+        # Використовуємо шлях ./DotNetCoreSqlDb.csproj як ви вказали
         run: dotnet publish ./DotNetCoreSqlDb.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
       - name: dotnet install ef
         run: dotnet tool install -g dotnet-ef --version 8.0.*
 
       - name: dotnet bundle migration
-        # Перевірте, чи правильно вказано шлях до .csproj нижче
         run: dotnet ef migrations bundle --runtime linux-x64 -p ./DotNetCoreSqlDb.csproj -o ${{env.DOTNET_ROOT}}/myapp/migrate --force
 
       - name: Upload artifact for deployment job
@@ -52,7 +50,15 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
-          path: ./publish # Завантажуємо у конкретну папку
+          path: ./publish
+
+      # КРОК АВТОРИЗАЦІЇ (Додано)
+      # Якщо ви використовуєте Publish Profile, цей крок допоможе системі "побачити" права
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+        continue-on-error: true # Це дозволить продовжити, якщо ви використовуєте ТІЛЬКИ Publish Profile
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
