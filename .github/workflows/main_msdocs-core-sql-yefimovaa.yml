@@ -18,19 +18,21 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '8.0.x'
-          include-prerelease: true
+          # include-prerelease видалено, оскільки v4 його не підтримує в такому вигляді
 
       - name: Build with dotnet
         run: dotnet build --configuration Release
 
       - name: dotnet publish
-        run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+        # Ми вказуємо шлях до конкретного файлу проекту, щоб уникнути помилки зі Solution-level output
+        run: dotnet publish DotNetCoreSqlDb/DotNetCoreSqlDb.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
       - name: dotnet install ef
         run: dotnet tool install -g dotnet-ef --version 8.0.*
 
       - name: dotnet bundle migration
-        run: dotnet ef migrations bundle --runtime linux-x64 -p DotNetCoreSqlDb/DotNetCoreSqlDb.csproj -o ${{env.DOTNET_ROOT}}/myapp/migrate
+        # Перевірте, чи правильно вказано шлях до .csproj нижче
+        run: dotnet ef migrations bundle --runtime linux-x64 -p DotNetCoreSqlDb/DotNetCoreSqlDb.csproj -o ${{env.DOTNET_ROOT}}/myapp/migrate --force
 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -50,6 +52,7 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: .net-app
+          path: ./publish # Завантажуємо у конкретну папку
 
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
@@ -58,4 +61,4 @@ jobs:
           app-name: 'msdocs-core-sql-yefimovaa'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
-          package: .
+          package: ./publish
