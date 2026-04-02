@@ -23,7 +23,6 @@ jobs:
         run: dotnet build --configuration Release
 
       - name: dotnet publish
-        # Використовуємо шлях ./DotNetCoreSqlDb.csproj як ви вказали
         run: dotnet publish ./DotNetCoreSqlDb.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
 
       - name: dotnet install ef
@@ -52,19 +51,10 @@ jobs:
           name: .net-app
           path: ./publish
 
-      # КРОК АВТОРИЗАЦІЇ (Додано)
-      # Якщо ви використовуєте Publish Profile, цей крок допоможе системі "побачити" права
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-        continue-on-error: true # Це дозволить продовжити, якщо ви використовуєте ТІЛЬКИ Publish Profile
-
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
         uses: azure/webapps-deploy@v3
         with:
           app-name: 'msdocs-core-sql-yefimovaa'
-          slot-name: 'Production'
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
           package: ./publish
