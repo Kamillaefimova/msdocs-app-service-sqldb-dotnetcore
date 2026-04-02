@@ -24,39 +24,12 @@ jobs:
       - name: Build with dotnet
         run: dotnet build DotNetCoreSqlDb/DotNetCoreSqlDb.csproj --configuration Release
 
-      - name: dotnet publish
-        run: dotnet publish DotNetCoreSqlDb/DotNetCoreSqlDb.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
+- name: dotnet publish
+  run: dotnet publish -c Release -o ${{env.DOTNET_ROOT}}/myapp
+  working-directory: DotNetCoreSqlDb
 
-      - name: dotnet install ef
-        run: dotnet tool install -g dotnet-ef --version 7.0.14
+- name: dotnet install ef
+  run: dotnet tool install -g dotnet-ef --version 7.0.14
 
-      - name: dotnet bundle migration
-        run: dotnet ef migrations bundle --runtime linux-x64 -p DotNetCoreSqlDb/DotNetCoreSqlDb.csproj -o ${{env.DOTNET_ROOT}}/myapp/migrate
-
-      - name: Upload artifact for deployment job
-        uses: actions/upload-artifact@v4
-        with:
-          name: .net-app
-          path: ${{env.DOTNET_ROOT}}/myapp
-
-  deploy:
-    runs-on: ubuntu-latest
-    needs: build
-    environment:
-      name: 'Production'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: .net-app
-
-      - name: Deploy to Azure Web App
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: 'msdocs-core-sql-yefimovaa'
-          slot-name: 'Production'
-          publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
-          package: .
+- name: dotnet bundle migration
+  run: dotnet ef migrations bundle --runtime linux-x64 -p DotNetCoreSqlDb/DotNetCoreSqlDb.csproj -o ${{env.DOTNET_ROOT}}/myapp/migrate
