@@ -6,6 +6,9 @@ on:
       - main
   workflow_dispatch:
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -19,7 +22,7 @@ jobs:
           dotnet-version: '7.0.x'
 
       - name: Build with dotnet
-        run: dotnet build --configuration Release
+        run: dotnet build DotNetCoreSqlDb/DotNetCoreSqlDb.csproj --configuration Release
 
       - name: dotnet publish
         run: dotnet publish DotNetCoreSqlDb/DotNetCoreSqlDb.csproj -c Release -o ${{env.DOTNET_ROOT}}/myapp
